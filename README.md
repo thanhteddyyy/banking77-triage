@@ -44,12 +44,12 @@ Cho một câu hỏi/yêu cầu của khách hàng (ví dụ: *"Why was my card 
 - **Đặc trưng:** TF-IDF (cùng cấu hình với Naive Bayes)
 - **Mô hình:** `LinearSVC(C=1.0)`
 - **Pipeline:** `sklearn.Pipeline` gồm TF-IDF → SVC
-- **Mục đích:** Baseline mạnh hơn cho bài phân loại văn bản ngắn
+- **Kết quả tốt nhất trong 3 mô hình đã thử** → đang tiếp tục cải thiện
 
-### 3.3 TextCNN *(đang thử nghiệm)*
+### 3.3 TextCNN
 
-- **Đặc trưng:** Word embeddings (huấn luyện từ đầu hoặc pretrained)
-- **Kiến trúc:** Convolutional filters với nhiều kernel size để bắt n-gram
+- **Đặc trưng:** Word embeddings (huấn luyện từ đầu)
+- **Kiến trúc:** Convolutional filters với nhiều kernel size để bắt n-gram cục bộ
 - **Notebook:** [`notebooks/02_textcnn.ipynb`](notebooks/02_textcnn.ipynb)
 
 ---
@@ -92,10 +92,12 @@ jupyter notebook notebooks/02_textcnn.ipynb           # TextCNN
 | Mô hình | Accuracy | Macro-F1 | Thời gian train |
 |---------|----------|----------|-----------------|
 | Naive Bayes (TF-IDF) | 0.7975 | 0.7631 | ~0.28s |
+| TextCNN | 0.8501 | 0.8439 | — |
 | **Linear SVM (TF-IDF)** | **0.8767** | **0.8691** | ~0.84s |
-| TextCNN | *(đang chạy)* | *(đang chạy)* | — |
 
-> Kết quả trên **tập Test** (3.080 mẫu) chưa được đánh giá — sẽ cập nhật sau khi hoàn thiện pipeline.
+Sau khi so sánh cả 3 mô hình, **Linear SVM đạt Accuracy và Macro-F1 cao nhất** nên được chọn để tiếp tục cải thiện.
+
+> Kết quả trên **tập Test** (3.080 mẫu) chưa được đánh giá — sẽ cập nhật sau khi hoàn thiện pipeline SVM.
 
 ---
 
@@ -104,6 +106,10 @@ jupyter notebook notebooks/02_textcnn.ipynb           # TextCNN
 ### Linear SVM làm tốt hơn đáng kể so với Naive Bayes
 
 SVM cải thiện ~8 điểm Accuracy và ~10 điểm Macro-F1. Với dữ liệu văn bản ngắn và nhiều class, SVM với TF-IDF là lựa chọn baseline mạnh và nhanh.
+
+### TextCNN không vượt qua được SVM trong thí nghiệm này
+
+TextCNN đạt kết quả tốt hơn Naive Bayes nhưng vẫn kém hơn SVM ~2.5 điểm Macro-F1. Nguyên nhân có thể do embedding huấn luyện từ đầu với lượng dữ liệu hạn chế (~8.500 mẫu) chưa đủ để bắt được ngữ nghĩa tốt.
 
 ### Những intent khó nhất (F1 thấp nhất của SVM)
 
@@ -129,16 +135,21 @@ Phần lớn lỗi đến từ các intent **có nghĩa tương tự nhau**, kh�
 
 ### Đã kiểm chứng
 - [x] TF-IDF + Naive Bayes (baseline)
-- [x] TF-IDF + Linear SVM (strong baseline)
+- [x] TF-IDF + Linear SVM (strong baseline — **đang tập trung cải thiện**)
+- [x] TextCNN (word embeddings từ đầu)
 - [x] Phân tích lỗi theo intent và cặp nhầm lẫn
+
+### Đang thực hiện
+
+- [ ] **Tinh chỉnh hyperparameter SVM** — tuning `C`, `ngram_range`, `max_features`
+- [ ] **Feature engineering nâng cao** — character n-gram, subword features
 
 ### Còn cần thử
 
-- [ ] **TextCNN** — bắt được n-gram qua convolution, không cần feature engineering thủ công
 - [ ] **Pretrained embeddings** (GloVe, FastText) cho TextCNN
 - [ ] **Sentence-BERT / DistilBERT fine-tune** — kỳ vọng giải quyết được các cặp nhầm lẫn nghĩa gần
 - [ ] **Data augmentation** cho các intent có ít mẫu (`contactless_not_working`, `virtual_card_not_working`)
-- [ ] Đánh giá cuối cùng trên tập **Test** sau khi chọn được mô hình tốt nhất
+- [ ] Đánh giá cuối cùng trên tập **Test** sau khi hoàn thiện pipeline SVM
 
 ---
 
@@ -148,7 +159,7 @@ Phần lớn lỗi đến từ các intent **có nghĩa tương tự nhau**, kh�
 banking77-triage/
 ├── notebooks/
 │   ├── 01_eda_and_baseline.ipynb    # EDA, Naive Bayes, Linear SVM
-│   ├── 02_textcnn.ipynb             # TextCNN (đang phát triển)
+│   ├── 02_textcnn.ipynb             # TextCNN
 │   └── svm_error_analysis/          # CSV kết quả phân tích lỗi SVM
 ├── src/                             # Module Python (dự kiến)
 ├── data/                            # Dữ liệu local (nếu có)
